@@ -1,0 +1,62 @@
+import sys
+import requests
+import pygame
+import os
+
+
+coords1, coords2 = map(str, input().split())
+spn1, spn2 = map(str, input().split())
+
+def up_spn():
+    global spn1, spn2
+    spn1 = str(float(spn1) * 2)
+    spn2 = str(float(spn2) * 2)
+    map()
+
+def down_spn():
+    global spn1, spn2
+    spn1 = str(float(spn1) / 2)
+    spn2 = str(float(spn2) / 2)
+    map()
+
+def map():
+    global image
+    maps_server = 'http://static-maps.yandex.ru/1.x/'
+    map_params = {
+        'll': f'{coords1}, {coords2}',
+        'spn': f'{spn1}, {spn2}',
+        'l': 'map'}
+    response = requests.get(maps_server, params=map_params)
+    with open('map.png', 'wb') as f:
+        f.write(response.content)
+    image = pygame.image.load('map.png')
+    os.remove('map.png')
+
+
+pygame.init()
+map()
+pygame.display.set_caption('MAPSAPI')
+size = width, height = 400, 400
+screen = pygame.display.set_mode(size)
+running = True
+fps = 50
+clock = pygame.time.Clock()
+
+def terminate():
+    pygame.quit()
+    sys.exit()
+
+
+while running:
+    screen.blit(image, (0, 0))
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            terminate()
+        if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_PAGEUP:
+                up_spn()
+            if event.key == pygame.K_PAGEDOWN:
+                down_spn()
+    pygame.display.flip()
+    clock.tick(fps)
+pygame.quit()
